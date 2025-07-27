@@ -1,7 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:e_commerce_products/product.dart';
 
-class AppProduct extends StatelessWidget {
-  const AppProduct({super.key});
+class AppProduct extends StatefulWidget {
+  final Product? product;
+  const AppProduct({Key? key, this.product}) : super(key: key);
+
+  @override
+  State<AppProduct> createState() => _AppProductState();
+}
+
+class _AppProductState extends State<AppProduct> {
+  late TextEditingController titleController;
+  late TextEditingController categoryController;
+  late TextEditingController priceController;
+  late TextEditingController descriptionController;
+
+  @override
+  void initState() {
+    super.initState();
+    titleController = TextEditingController(text: widget.product?.title ?? '');
+    categoryController =
+        TextEditingController(text: widget.product?.category ?? '');
+    priceController = TextEditingController(
+        text: widget.product?.price != null
+            ? widget.product!.price.toString()
+            : '');
+    descriptionController =
+        TextEditingController(text: widget.product?.description ?? '');
+  }
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    categoryController.dispose();
+    priceController.dispose();
+    descriptionController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +52,7 @@ class AppProduct extends StatelessWidget {
               Icons.arrow_back_ios,
               color: Color(0xFF6200EE),
             )),
-        title: const Text('Add Product'),
+        title: Text(widget.product == null ? 'Add Product' : 'Edit Product'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -41,7 +76,7 @@ class AppProduct extends StatelessWidget {
                         color: Color.fromARGB(255, 163, 163, 163),
                         size: 60,
                       ),
-                      const SizedBox(
+                      SizedBox(
                         height: 20,
                       ),
                       Text("Upload image", style: TextStyle(fontSize: 16))
@@ -52,6 +87,7 @@ class AppProduct extends StatelessWidget {
               const SizedBox(height: 30),
               const Text('name', style: TextStyle(fontWeight: FontWeight.bold)),
               TextField(
+                controller: titleController,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.grey[200],
@@ -66,6 +102,7 @@ class AppProduct extends StatelessWidget {
               const Text('category',
                   style: TextStyle(fontWeight: FontWeight.bold)),
               TextField(
+                controller: categoryController,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.grey[200],
@@ -80,6 +117,8 @@ class AppProduct extends StatelessWidget {
               const Text('price',
                   style: TextStyle(fontWeight: FontWeight.bold)),
               TextField(
+                controller: priceController,
+                keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.grey[200],
@@ -94,6 +133,7 @@ class AppProduct extends StatelessWidget {
               const Text('description',
                   style: TextStyle(fontWeight: FontWeight.bold)),
               TextField(
+                controller: descriptionController,
                 maxLines: 6,
                 decoration: InputDecoration(
                   filled: true,
@@ -109,7 +149,16 @@ class AppProduct extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    final product = Product(
+                      title: titleController.text,
+                      description: descriptionController.text,
+                      category: categoryController.text,
+                      price: double.tryParse(priceController.text) ?? 0.0,
+                      imagePath: 'images/product.jpg',
+                    );
+                    Navigator.of(context).pop(product);
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF6200EE),
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -117,8 +166,8 @@ class AppProduct extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: const Text(
-                    'ADD',
+                  child: Text(
+                    widget.product == null ? 'ADD' : 'UPDATE',
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
@@ -127,7 +176,9 @@ class AppProduct extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context).pop('delete');
+                  },
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Colors.red),
                     shape: RoundedRectangleBorder(

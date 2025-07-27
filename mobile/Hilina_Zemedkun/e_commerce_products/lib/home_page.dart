@@ -1,6 +1,5 @@
-import 'package:e_commerce_products/detail_product.dart';
+import 'package:e_commerce_products/product.dart';
 import 'package:flutter/material.dart';
-import 'package:e_commerce_products/add_product.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -10,14 +9,54 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  List<Product> products = [
+    Product(
+      title: 'Derby Leather Shoes',
+      description:
+          "Derby leather shoes are a timeless classic, known for their open lacing system which makes them a versatile choice for both casual and formal wear.",
+      category: "Men's shoe",
+      price: 120.0,
+      imagePath: 'images/product.jpg',
+    ),
+    
+  ];
+
+  void _navigateToAddProduct([Product? product, int? index]) async {
+    final result =
+        await Navigator.of(context).pushNamed('/add', arguments: product);
+    if (result is Product) {
+      setState(() {
+        if (index != null) {
+          products[index] = result;
+        } else {
+          products.add(result);
+        }
+      });
+    }
+  }
+
+  void _navigateToDetail(Product product, int index) async {
+    final result =
+        await Navigator.of(context).pushNamed('/detail', arguments: product);
+    if (result == 'delete') {
+      setState(() {
+        products.removeAt(index);
+      });
+    } else if (result is Product) {
+      setState(() {
+        products[index] = result;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    List<Widget> _cardWidget(int count) {
-      List<Widget> cards = List.generate(count, (index) {
+    List<Widget> _cardWidget() {
+      return List.generate(products.length, (index) {
+        final product = products[index];
         return GestureDetector(
           onTap: () {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => DetailProduct()));
+            _navigateToDetail(product, index);
           },
           child: Container(
             margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
@@ -34,16 +73,16 @@ class _HomePageState extends State<HomePage> {
                     height: 200,
                     width: double.infinity,
                     child: Image.asset(
-                      'images/product.jpg',
+                      product.imagePath,
                       fit: BoxFit.cover,
                     ),
                   ),
                   Padding(
                     padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-                    child: const Row(
+                    child: Row(
                       children: [
                         Text(
-                          'Derby Leather Shoes',
+                          product.title,
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w500,
@@ -52,7 +91,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                         Spacer(),
                         Text(
-                          '\$120',
+                          '\$${product.price}',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w500,
@@ -70,7 +109,7 @@ class _HomePageState extends State<HomePage> {
                     child: Row(
                       children: [
                         Text(
-                          "Men's shoe",
+                          product.category,
                           style: TextStyle(
                             fontSize: 16,
                             color: const Color.fromARGB(255, 168, 167, 167),
@@ -94,7 +133,6 @@ class _HomePageState extends State<HomePage> {
           ),
         );
       });
-      return cards;
     }
 
     return Scaffold(
@@ -173,14 +211,13 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(
               height: 15,
             ),
-            ..._cardWidget(6)
+            ..._cardWidget()
           ]),
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => AppProduct()));
+          _navigateToAddProduct();
         },
         backgroundColor: const Color(0xFF6200EE),
         shape: const CircleBorder(),

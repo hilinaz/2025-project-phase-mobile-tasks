@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:e_commerce_products/product.dart';
 
 class DetailProduct extends StatefulWidget {
-  const DetailProduct({super.key});
+  final Product product;
+  const DetailProduct({Key? key, required this.product}) : super(key: key);
 
   @override
   State<DetailProduct> createState() => _DetailProductState();
@@ -131,7 +133,10 @@ class _DetailProductState extends State<DetailProduct> {
     Widget _descriptionWidget(String description) {
       Widget descriptionWidget = Container(
         margin: const EdgeInsets.fromLTRB(23, 10, 20, 15),
-        child: Text(description,style: TextStyle(color:Colors.black,fontSize: 16),),
+        child: Text(
+          description,
+          style: TextStyle(color: Colors.black, fontSize: 16),
+        ),
       );
       return descriptionWidget;
     }
@@ -146,12 +151,10 @@ class _DetailProductState extends State<DetailProduct> {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(30),
-                        topRight: Radius.circular(30)
-                      )
-                    ),
+                        color: Colors.black,
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(30),
+                            topRight: Radius.circular(30))),
                     clipBehavior: Clip.hardEdge,
                     height: 250,
                     width: double.infinity,
@@ -161,56 +164,53 @@ class _DetailProductState extends State<DetailProduct> {
                     ),
                   ),
                   Positioned(
-                      top: 20,
-                      left: 13,
-                      child: Container(
-                        width: 35,
-                        height: 35,
-                        decoration: const BoxDecoration(
-                            color: Colors.white, shape: BoxShape.circle),
-                        child: Center(
+                    top: 20,
+                    left: 13,
+                    child: Container(
+                      width: 35,
+                      height: 35,
+                      decoration: const BoxDecoration(
+                          color: Colors.white, shape: BoxShape.circle),
+                      child: Center(
                           child: IconButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            icon: Icon(
-                              Icons.arrow_back_ios,
-                              size: 20,
-                            ),
-                            color:  const Color(0xFF3f51f3))
-                          ),
-                        ),
-                      )
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              icon: Icon(
+                                Icons.arrow_back_ios,
+                                size: 20,
+                              ),
+                              color: const Color(0xFF3f51f3))),
+                    ),
+                  )
                 ],
               ),
-              _DescriptionWidget('Derby Leather', '120', 4.0, 'Men\'s shoe'),
+              _DescriptionWidget(
+                  widget.product.title,
+                  widget.product.price.toString(),
+                  4.0,
+                  widget.product.category),
               _sizeRange(39, 50),
-              _descriptionWidget( 'Derby leather shoes are a timeless classic, known for their open lacing system '
-                      'which makes them a versatile choice for both casual and formal wear. '
-                      'Crafted from high-quality leather, these shoes offer exceptional comfort '
-                      'and durability. Their elegant design and sturdy construction ensure '
-                      'they will be a staple in your wardrobe for years to come. Perfect for '
-                      'daily wear or special occasions.'),
-            Container(
-              margin: const EdgeInsets.fromLTRB(20, 5, 10, 0),
-              child: Row(
-                children: [
-                  
-    Container(
+              _descriptionWidget(widget.product.description),
+              Container(
+                margin: const EdgeInsets.fromLTRB(20, 5, 10, 0),
+                child: Row(
+                  children: [
+                    Container(
                         height: 50,
                         width: 150,
                         decoration: const BoxDecoration(),
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.of(context).pop('delete');
+                          },
                           child: Text(
                             'DELETE',
                             style: TextStyle(fontSize: 16, color: Colors.red),
                           ),
                           style: ButtonStyle(
-                            side: WidgetStateProperty.all(BorderSide(
-                              color: Colors.red
-                            ),) ,
-                             
+                              side: WidgetStateProperty.all(
+                                  BorderSide(color: Colors.red)),
                               backgroundColor:
                                   WidgetStateProperty.all(Colors.white),
                               shape: WidgetStatePropertyAll(
@@ -219,13 +219,18 @@ class _DetailProductState extends State<DetailProduct> {
                                 ),
                               )),
                         )),
-                        const Spacer(),
-                        Container(
+                    const Spacer(),
+                    Container(
                         height: 50,
                         width: 150,
-                       
                         child: OutlinedButton(
-                          onPressed: () {},
+                          onPressed: () async {
+                            final updatedProduct = await Navigator.of(context)
+                                .pushNamed('/add', arguments: widget.product);
+                            if (updatedProduct is Product) {
+                              Navigator.of(context).pop(updatedProduct);
+                            }
+                          },
                           child: Text(
                             'UPDATE',
                             style: const TextStyle(fontSize: 16),
@@ -241,12 +246,12 @@ class _DetailProductState extends State<DetailProduct> {
                                 ),
                               )),
                         )),
-                        const SizedBox(height: 100,)
-                                
-                ],
-              ),
-            )
-        
+                    const SizedBox(
+                      height: 100,
+                    )
+                  ],
+                ),
+              )
             ],
           ),
         ),
