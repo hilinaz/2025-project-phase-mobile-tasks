@@ -1,14 +1,18 @@
 import '../entities/product.dart';
-import '../repositories/product_repository.dart';
 import 'usecase.dart';
 
 class UpdateProductUsecase implements UseCase<Product, Product> {
-  final ProductRepository repository;
+  final List<Product> _products;
 
-  UpdateProductUsecase(this.repository);
+  UpdateProductUsecase(this._products);
 
   @override
   Future<Product> call(Product product) async {
-    return await repository.updateProduct(product);
+    final index = _products.indexWhere((p) => p.id == product.id);
+    if (index != -1) {
+      _products[index] = product;
+      return product;
+    }
+    throw Exception('Product not found');
   }
 }

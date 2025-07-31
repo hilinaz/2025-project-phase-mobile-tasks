@@ -1,14 +1,13 @@
 import '../entities/product.dart';
-import '../repositories/product_repository.dart';
 import 'usecase.dart';
 
 class ViewAllProductsUsecase implements UseCase<List<Product>, NoParams> {
-  final ProductRepository repository;
+  final List<Product> _products;
 
-  ViewAllProductsUsecase(this.repository);
+  ViewAllProductsUsecase(this._products);
 
   @override
   Future<List<Product>> call(NoParams params) async {
-    return await repository.getAllProducts();
+    return _products;
   }
 }

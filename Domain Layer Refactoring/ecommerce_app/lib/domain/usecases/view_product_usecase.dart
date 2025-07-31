@@ -1,14 +1,17 @@
 import '../entities/product.dart';
-import '../repositories/product_repository.dart';
 import 'usecase.dart';
 
 class ViewProductUsecase implements UseCase<Product?, String> {
-  final ProductRepository repository;
+  final List<Product> _products;
 
-  ViewProductUsecase(this.repository);
+  ViewProductUsecase(this._products);
 
   @override
   Future<Product?> call(String productId) async {
-    return await repository.getProductById(productId);
+    try {
+      return _products.firstWhere((product) => product.id == productId);
+    } catch (e) {
+      return null;
+    }
   }
 }
