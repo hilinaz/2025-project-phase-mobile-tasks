@@ -100,7 +100,7 @@ class ProductRepositoryImpl implements ProductRepository {
     if (await networkInfo.isConnected) {
       try {
         await remoteDatasource.deleteProduct(id);
-        await localDatasource.deleteProduct(id);
+    
         return const Right(null);
       } on ServerException {
         return Left(ServerFailure());
