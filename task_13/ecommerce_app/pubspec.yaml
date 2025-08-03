@@ -39,6 +39,9 @@ dependencies:
   connectivity_plus: ^4.0.1 # Latest stable, null safe
   http: ^0.13.6           # Latest stable, null safe
   shared_preferences: ^2.1.2 # Latest stable, null safe
+  
+  internet_connection_checker: ^1.0.0+1
+
 
 
 

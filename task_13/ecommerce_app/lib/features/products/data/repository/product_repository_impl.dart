@@ -2,11 +2,12 @@ import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/exception.dart';
 import '../../../../core/error/failures.dart';
+
 import '../../../../core/platform/network_info.dart';
 import '../../doamin/entities/product.dart';
 import '../../doamin/repositories/product_repository.dart';
 import '../datasources/product_local_datasource.dart';
-import '../datasources/product_remote_datasource.dart'; 
+import '../datasources/product_remote_datasource.dart';
 import '../models/product_model.dart';
 
 class ProductRepositoryImpl implements ProductRepository {
@@ -45,7 +46,7 @@ class ProductRepositoryImpl implements ProductRepository {
     if (await networkInfo.isConnected) {
       try {
         final remoteProducts = await remoteDatasource.getAllProducts();
-        await localDatasource.cacheProduct(remoteProducts as ProductModel);
+        // Caching skipped for list (unless you implement batch cache)
         return Right(remoteProducts);
       } on ServerException {
         return Left(ServerFailure());
@@ -73,7 +74,7 @@ class ProductRepositoryImpl implements ProductRepository {
         return Left(CacheFailure());
       }
     } else {
-      return Left(NetworkFailure());
+      return Left(NetworkFailure()); 
     }
   }
 
@@ -90,7 +91,7 @@ class ProductRepositoryImpl implements ProductRepository {
         return Left(CacheFailure());
       }
     } else {
-      return Left(NetworkFailure());
+      return Left(NetworkFailure()); 
     }
   }
 
@@ -107,7 +108,7 @@ class ProductRepositoryImpl implements ProductRepository {
         return Left(CacheFailure());
       }
     } else {
-      return Left(NetworkFailure());
+      return Left(NetworkFailure()); 
     }
   }
 }
