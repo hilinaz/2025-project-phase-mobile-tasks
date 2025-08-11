@@ -48,7 +48,8 @@ class ProductRemoteDatasourceImp implements ProductRemoteDatasource {
   }
 
   @override
- Future<List<ProductModel>> getAllProducts() async {
+@override
+  Future<List<ProductModel>> getAllProducts() async {
     final response = await httpClient.get(
       Uri.parse(
           'https://g5-flutter-learning-path-be-tvum.onrender.com/api/v1/products/'),
@@ -56,13 +57,13 @@ class ProductRemoteDatasourceImp implements ProductRemoteDatasource {
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> jsonList = jsonDecode(response.body);
+      final jsonResponse = jsonDecode(response.body);
+      final List<dynamic> jsonList = jsonResponse['data'];
       return jsonList.map((json) => ProductModel.fromJson(json)).toList();
     } else {
       throw ServerException();
     }
   }
-
 
   @override
   Future<ProductModel> getProductById(String id) async {

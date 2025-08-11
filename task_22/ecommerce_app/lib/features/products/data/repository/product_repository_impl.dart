@@ -12,10 +12,12 @@ class ProductRepositoryImpl implements ProductRepository {
   final ProductLocalDatasource localDatasource;
   final ProductRemoteDatasource remoteDatasource;
   final NetworkInfo networkInfo;
-  ProductRepositoryImpl(
-      {required this.localDatasource,
-      required this.remoteDatasource,
-      required this.networkInfo});
+
+  ProductRepositoryImpl({
+    required this.localDatasource,
+    required this.remoteDatasource,
+    required this.networkInfo,
+  });
 
   @override
   Future<Either<Failure, void>> createProduct(Product product) async {
@@ -32,7 +34,7 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<Either<Failure, void>> deleteProduct(String id) async {
-  if (await networkInfo.isConnected) {
+    if (await networkInfo.isConnected) {
       try {
         return Right(await remoteDatasource.deleteProduct(id));
       } on ServerException {
@@ -42,7 +44,6 @@ class ProductRepositoryImpl implements ProductRepository {
       return Left(ServerFailure());
     }
   }
-  
 
   @override
   Future<Either<Failure, List<Product>>> getAllProducts() async {
@@ -52,7 +53,7 @@ class ProductRepositoryImpl implements ProductRepository {
         await localDatasource.cacheProducts(productList);
         return Right(productList);
       } on ServerException {
-        return (Left(ServerFailure()));
+        return Left(ServerFailure());
       }
     } else {
       try {
@@ -84,7 +85,7 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<Either<Failure, void>> updateProduct(Product product) async {
-   if (await networkInfo.isConnected) {
+    if (await networkInfo.isConnected) {
       try {
         return Right(await remoteDatasource.updateProduct(product));
       } on ServerException {

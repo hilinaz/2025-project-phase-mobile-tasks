@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'bloc/auth_bloc.dart';
-import 'bloc/auth_event.dart';
-import 'bloc/auth_state.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -27,8 +25,8 @@ class _SignInPageState extends State<SignInPage> {
     if (_formKey.currentState!.validate()) {
       context.read<AuthBloc>().add(
             SignInRequested(
-              _emailController.text.trim(),
-              _passwordController.text,
+              email: _emailController.text.trim(),
+              password: _passwordController.text,
             ),
           );
     }
@@ -104,11 +102,15 @@ class _SignInPageState extends State<SignInPage> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthSuccess) {
-          
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Welcome ${state.user.name}!')),
             );
-         
+            // Navigate to products page after successful signin
+            Navigator.pushNamedAndRemoveUntil(
+              context, 
+              '/products', 
+              (route) => false
+            );
           } else if (state is AuthFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -129,6 +131,7 @@ class _SignInPageState extends State<SignInPage> {
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
+
                     ),
                   ),
                   const SizedBox(height: 40),
@@ -195,7 +198,6 @@ class _SignInPageState extends State<SignInPage> {
                       const Text("Don't have an account? "),
                       TextButton(
                         onPressed: () {
-                         
                           Navigator.pushNamed(context, '/signup');
                         },
                         child: const Text(

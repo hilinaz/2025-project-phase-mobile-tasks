@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'bloc/auth_bloc.dart';
-import 'bloc/auth_event.dart';
-import 'bloc/auth_state.dart';
+
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -33,9 +32,9 @@ class _SignUpPageState extends State<SignUpPage> {
     if (_formKey.currentState!.validate() && _agreedToTerms) {
       context.read<AuthBloc>().add(
         SignUpRequested(
-          _nameController.text.trim(),
-          _emailController.text.trim(),
-          _passwordController.text,
+          name: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
         ),
       );
     } else if (!_agreedToTerms) {
@@ -74,6 +73,7 @@ class _SignUpPageState extends State<SignUpPage> {
       ],
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -119,11 +119,15 @@ class _SignUpPageState extends State<SignUpPage> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthSuccess) {
-       
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Welcome ${state.user.name}!')),
             );
-
+            // Navigate to products page after successful signup
+            Navigator.pushNamedAndRemoveUntil(
+              context, 
+              '/products', 
+              (route) => false
+            );
           } else if (state is AuthFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -186,11 +190,12 @@ class _SignUpPageState extends State<SignUpPage> {
                         return 'Password must be at least 6 characters';
                       }
                       return null;
+
                     },
                   ),
                   const SizedBox(height: 20),
                   _buildInputField(
-                    'Confirm password', 
+                    'Confirm password',
                     '********',
                     _confirmPasswordController,
                     isPassword: true,
@@ -240,10 +245,12 @@ class _SignUpPageState extends State<SignUpPage> {
                             ),
                           ),
                           child: state is AuthLoading
-                              ? const CircularProgressIndicator(color: Colors.white)
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white)
                               : const Text(
                                   'SIGN UP',
-                                  style: TextStyle(fontSize: 18, color: Colors.white),
+                                  style: TextStyle(
+                                      fontSize: 18, color: Colors.white),
                                 ),
                         ),
                       );

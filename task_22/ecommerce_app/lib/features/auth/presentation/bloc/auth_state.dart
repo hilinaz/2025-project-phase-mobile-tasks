@@ -1,34 +1,28 @@
-import 'package:ecommerce_app/features/auth/domain/entities/user.dart';
-import 'package:equatable/equatable.dart';
+part of 'auth_bloc.dart';
 
-
-abstract class AuthState extends Equatable {
+sealed class AuthState extends Equatable {
+  const AuthState();
+  
   @override
-  List<Object?> get props => [];
+  List<Object> get props => [];
 }
 
-// Initial state before any action is taken
-class AuthInitial extends AuthState {}
+final class AuthInitial extends AuthState {}
 
-// State when an authentication action is in progress
-class AuthLoading extends AuthState {}
+final class AuthLoading extends AuthState {}
 
-// State when authentication is successful
-class AuthSuccess extends AuthState {
+final class AuthSuccess extends AuthState {
   final User user;
-
-  AuthSuccess(this.user);
+  const AuthSuccess(this.user);
 
   @override
-  List<Object?> get props => [user];
+  List<Object> get props => [user];
 }
 
-// State when authentication fails
-class AuthFailure extends AuthState {
+final class AuthFailure extends AuthState {
   final String message;
-
-  AuthFailure(this.message);
+  const AuthFailure(this.message);
 
   @override
-  List<Object?> get props => [message];
+  List<Object> get props => [message];
 }
