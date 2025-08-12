@@ -1,10 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../bloc/product_bloc.dart';
 import '../bloc/product_event.dart';
 import '../bloc/product_state.dart';
-import '../../data/models/product_model.dart'; // Ensure this is the correct path
+import '../../data/models/product_model.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,7 +17,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String _userName = ''; // State variable to hold the user's name
+  String _userName = '';
 
   @override
   void initState() {
@@ -23,13 +26,15 @@ class _HomePageState extends State<HomePage> {
     context.read<ProductBloc>().add(LoadAllProducts());
   }
 
-  // Method to fetch the user's name from SharedPreferences
   Future<void> _loadUserName() async {
     final prefs = await SharedPreferences.getInstance();
-    final name = prefs.getString('userName');
-    if (name != null) {
+    final user = prefs.getString('USER');
+
+    if (user != null) {
+      final userMap = jsonDecode(user);
+      
       setState(() {
-        _userName = name;
+        _userName = userMap['name'] ?? '';
       });
     }
   }
@@ -37,12 +42,9 @@ class _HomePageState extends State<HomePage> {
   Widget _buildProductCard(ProductModel product) {
     return InkWell(
       onTap: () {
-        // We now use Navigator.push with a .then() block to handle the result
         Navigator.pushNamed(context, '/detail', arguments: product)
             .then((result) {
-          // Check if the result is true, which indicates a successful delete operation
           if (result == true) {
-            // Reload the products to update the list on HomePage
             context.read<ProductBloc>().add(LoadAllProducts());
           }
         });
@@ -139,134 +141,114 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        toolbarHeight: 100,
-        flexibleSpace: SafeArea(
-          child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            _userName.isNotEmpty
-                                ? 'Hello, $_userName'
-                                : 'Hello, Guest',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'July 14, 2023',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.notifications_none, size: 30),
-                      onPressed: () {
-                        // Handle notifications
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.message, size: 30),
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/chats');
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Available Products',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _userName.isNotEmpty ? 'Hello, $_userName' : 'Hello, Guest',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              'July 14, 2023',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_none, size: 30),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.message, size: 30),
+            onPressed: () {
+              Navigator.pushNamed(context, '/chats');
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+            child: Text(
+              'Available Products',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-        ),
-      ),
-      body: BlocBuilder<ProductBloc, ProductState>(
-        builder: (context, state) {
-          if (state is ProductLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (state is ProductsLoaded) {
-            if (state.products.isEmpty) {
-              return const Center(
-                child: Text(
-                  'No products available',
-                  style: TextStyle(fontSize: 18, color: Colors.grey),
-                ),
-              );
-            }
-            return ListView.builder(
-              itemCount: state.products.length,
-              itemBuilder: (context, index) {
-                return _buildProductCard(state.products[index]);
-              },
-            );
-          } else if (state is ProductError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.red,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Error: ${state.message}',
-                    style: const TextStyle(fontSize: 16, color: Colors.red),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<ProductBloc>().add(LoadAllProducts());
+          Expanded(
+            child: BlocBuilder<ProductBloc, ProductState>(
+              builder: (context, state) {
+                if (state is ProductLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else if (state is ProductsLoaded) {
+                  if (state.products.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'No products available',
+                        style: TextStyle(fontSize: 18, color: Colors.grey),
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    itemCount: state.products.length,
+                    itemBuilder: (context, index) {
+                      return _buildProductCard(state.products[index]);
                     },
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
-          } else {
-            return const Center(
-              child: Text(
-                'No products loaded',
-                style: TextStyle(fontSize: 18, color: Colors.grey),
-              ),
-            );
-          }
-        },
+                  );
+                } else if (state is ProductError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: Colors.red,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Error: ${state.message}',
+                          style:
+                              const TextStyle(fontSize: 16, color: Colors.red),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            context.read<ProductBloc>().add(LoadAllProducts());
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  return const Center(
+                    child: Text(
+                      'No products loaded',
+                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                    ),
+                  );
+                }
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

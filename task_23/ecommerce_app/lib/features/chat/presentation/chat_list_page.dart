@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'bloc/chat_list_bloc.dart'; // Assuming this is the path
+import 'bloc/chat_list_bloc.dart';
 
 
 class ChatPage extends StatefulWidget {
@@ -12,15 +12,66 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
+  final TextEditingController _emailController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
-    // Dispatch the event to load chats when the page initializes
     context.read<ChatListBloc>().add(const LoadChatsRequested());
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
   }
 
   Future<void> _onRefresh() async {
     context.read<ChatListBloc>().add(const RefreshChatsRequested());
+  }
+
+  void _showNewChatDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Start a New Chat'),
+          content: TextField(
+            controller: _emailController,
+            decoration: const InputDecoration(
+              labelText: 'User Email',
+              hintText: 'Enter the user\'s email',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final email = _emailController.text;
+                if (email.isNotEmpty) {
+                  // TODO: Implement your chat initiation logic here.
+                  // For now, we'll just print the email.
+                  print('Attempting to start a chat with: $email');
+
+                  // Close the dialog
+                  Navigator.of(context).pop();
+
+                  // Navigate to the MyChatPage using its named route
+                  Navigator.of(context).pushNamed('/myChat', arguments: email);
+                }
+              },
+              child: const Text('Start Chat'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -72,9 +123,20 @@ class _ChatPageState extends State<ChatPage> {
             );
           } else if (state is ChatListLoaded) {
             if (state.chats.isEmpty) {
-              return const Center(
-                child: Text('No chats available',
-                    style: TextStyle(fontSize: 18, color: Colors.grey)),
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('No chats yet',
+                        style: TextStyle(fontSize: 18, color: Colors.grey)),
+                    const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      onPressed: _showNewChatDialog,
+                      icon: const Icon(Icons.add),
+                      label: const Text('Start a new chat'),
+                    ),
+                  ],
+                ),
               );
             }
             return RefreshIndicator(
@@ -88,17 +150,9 @@ class _ChatPageState extends State<ChatPage> {
                         horizontal: 16.0, vertical: 8.0),
                     child: Row(
                       children: [
-                        // The CircleAvatar now uses a solid color and an icon
-                        CircleAvatar(
+                        const CircleAvatar(
                           radius: 30,
-                          backgroundColor: Colors.blueGrey[
-                              100], // A light, neutral color for the background
-                          child: Icon(
-                            Icons.person, // A person icon as the avatar
-                            size: 40,
-                            color: Colors.blueGrey[
-                                400], // A slightly darker color for the icon
-                          ),
+                          child: Icon(Icons.person),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -106,7 +160,7 @@ class _ChatPageState extends State<ChatPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                chat.user1.name, // Display user1's name
+                                chat.user1.name,
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -124,11 +178,13 @@ class _ChatPageState extends State<ChatPage> {
                             ],
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.more_vert),
-                          onPressed: () {
-                            // Handle options for each chat
-                          },
+                        const SizedBox(width: 16),
+                        Text(
+                          _formatTimestamp(chat.updatedAt),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
                         ),
                       ],
                     ),
@@ -137,9 +193,27 @@ class _ChatPageState extends State<ChatPage> {
               ),
             );
           }
-          return const SizedBox.shrink(); // Default state
+          return const SizedBox.shrink();
         },
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showNewChatDialog,
+        backgroundColor: Colors.blue,
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
     );
+  }
+
+  String _formatTimestamp(DateTime timestamp) {
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
+
+    if (difference.inDays == 0) {
+      return 'Today';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else {
+      return '${timestamp.day}/${timestamp.month}/${timestamp.year}';
+    }
   }
 }

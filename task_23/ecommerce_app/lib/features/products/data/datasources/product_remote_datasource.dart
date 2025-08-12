@@ -18,37 +18,43 @@ class ProductRemoteDatasourceImp implements ProductRemoteDatasource {
   ProductRemoteDatasourceImp(this.httpClient);
   @override
   Future<void> createProduct(Product product) async {
+    // Convert the product object to a JSON-serializable map.
+    final productJson = product.toJson();
+
+    // Convert the price from a double to a string.
+    productJson['price'] = productJson['price'].toString();
+
     final response = await httpClient.post(
       Uri.parse(
           'https://g5-flutter-learning-path-be-tvum.onrender.com/api/v1/products/'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(product.toJson()),
+      body: jsonEncode(productJson),
     );
 
+    if (response.statusCode == 201) {
+      return;
+    } else {
+      print(response.body);
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<void> deleteProduct(String id) async {
+    final response = await httpClient.delete(
+      Uri.parse(
+          'https://g5-flutter-learning-path-be-tvum.onrender.com/api/v1/products/$id'),
+      headers: {'Content-Type': 'application/json'},
+    );
     if (response.statusCode == 200) {
       return;
     } else {
       throw ServerException();
     }
   }
-  
 
   @override
-  Future<void> deleteProduct(String id)async {
-   final response = await httpClient.delete(
-      Uri.parse(
-          'https://g5-flutter-learning-path-be-tvum.onrender.com/api/v1/products/$id'),
-      headers: {'Content-Type': 'application/json'},
-    );
-    if (response.statusCode == 200) {
-      return ;
-    } else {
-      throw ServerException();
-    }
-  }
-
   @override
-@override
   Future<List<ProductModel>> getAllProducts() async {
     final response = await httpClient.get(
       Uri.parse(
@@ -80,7 +86,7 @@ class ProductRemoteDatasourceImp implements ProductRemoteDatasource {
   }
 
   @override
- Future<void> updateProduct(Product product) async {
+  Future<void> updateProduct(Product product) async {
     final response = await httpClient.put(
       Uri.parse(
           'https://g5-flutter-learning-path-be-tvum.onrender.com/api/v1/products/${product.id}'),
@@ -94,5 +100,4 @@ class ProductRemoteDatasourceImp implements ProductRemoteDatasource {
       throw ServerException();
     }
   }
-
 }

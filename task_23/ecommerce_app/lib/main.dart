@@ -29,6 +29,7 @@ import 'features/chat/presentation/bloc/chat_list_bloc.dart';
 
 // Products
 import 'features/products/data/models/product_model.dart';
+import 'features/products/doamin/entities/product.dart';
 import 'features/products/presentation/pages/add_product.dart';
 import 'features/products/presentation/pages/detail_product_page.dart';
 import 'features/products/presentation/pages/home_page.dart';
@@ -125,13 +126,19 @@ class MyApp extends StatelessWidget {
           '/detail': (context) {
             final product = ModalRoute.of(context)!.settings.arguments;
             return DetailProduct(product: product as ProductModel);},
-          '/add': (_) => AppProduct() 
+         '/add': (context) {
+          
+            final product =
+                ModalRoute.of(context)!.settings.arguments as Product?;
+   
+            return AppProduct(product: product);
+          },
 
           
 
         },
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 132, 88, 208)),
           useMaterial3: true,
         ),
       ),

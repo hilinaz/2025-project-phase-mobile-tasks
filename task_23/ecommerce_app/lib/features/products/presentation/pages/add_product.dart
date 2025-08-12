@@ -1,3 +1,4 @@
+// presentation/widgets/app_product.dart
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -31,21 +32,12 @@ class _AppProductState extends State<AppProduct> {
   void initState() {
     super.initState();
     nameController = TextEditingController(text: widget.product?.name ?? '');
-    // Corrected: Initialize categoryController
     categoryController =
         TextEditingController();
     priceController =
         TextEditingController(text: widget.product?.price.toString() ?? '');
     descriptionController =
         TextEditingController(text: widget.product?.description ?? '');
-    if (widget.product?.imageUrl != null &&
-        widget.product!.imageUrl.isNotEmpty) {
-      // Corrected: Check if the file exists before creating a File object
-      final file = File(widget.product!.imageUrl);
-      if (file.existsSync()) {
-        _selectedImage = file;
-      }
-    }
   }
 
   @override
@@ -68,19 +60,30 @@ class _AppProductState extends State<AppProduct> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      final product = Product(
-        id: widget.product!.id, // Keep the id for updates
-        name: nameController.text,
-        description: descriptionController.text,
+      final isUpdating = widget.product != null;
 
+      if (_selectedImage == null && !isUpdating) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please select an image for the product.'),
+          ),
+        );
+        return;
+      }
+
+      final productToSave = Product(
+        id: isUpdating ? widget.product!.id :'',
+        name: nameController.text,
+       
+        description: descriptionController.text,
         price: double.parse(priceController.text),
-        imageUrl: _selectedImage?.path ?? '',
+        imageUrl: _selectedImage?.path ?? widget.product?.imageUrl ?? '',
       );
 
-      if (widget.product == null) {
-        context.read<ProductBloc>().add(CreateProduct(product));
+      if (isUpdating) {
+        context.read<ProductBloc>().add(UpdateProduct(productToSave));
       } else {
-        context.read<ProductBloc>().add(UpdateProduct(product));
+        context.read<ProductBloc>().add(CreateProduct(productToSave));
       }
     }
   }
@@ -146,9 +149,16 @@ class _AppProductState extends State<AppProduct> {
                                   image: FileImage(_selectedImage!),
                                   fit: BoxFit.cover,
                                 )
-                              : null,
+                              : widget.product?.imageUrl != null
+                                  ? DecorationImage(
+                                      image: NetworkImage(
+                                          widget.product!.imageUrl),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
                         ),
-                        child: _selectedImage == null
+                        child: _selectedImage == null &&
+                                widget.product?.imageUrl == null
                             ? const Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
